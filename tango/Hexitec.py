@@ -51,7 +51,7 @@ class Hexitec(PyTango.Device_4Impl):
 
     Core.DEB_CLASS(Core.DebModApplication, 'LimaCCDs')
 
-    def __init__(self, cl, name):
+    def __init__(self, *args):
         PyTango.Device_4Impl.__init__(self, *args)
 
         self.__ProcessType = {'RAW': HexitecAcq.Camera.RAW,
