@@ -108,35 +108,24 @@ void Interface::getStatus(StatusType& status) {
 	DEB_TRACE() << "Status is: "<< static_cast<int>(cam_status);
 	switch (cam_status) {
 	case Camera::Ready:
-		status.det = DetIdle;
-		status.acq = AcqReady;
-//		std::cout << "DetIdle/AcqReady" << std::endl;
+		status.set( HwInterface::StatusType::Ready );
 		break;
 	case Camera::Initialising:
-		status.det = DetIdle;
-		status.acq = AcqConfig;
+		status.set( HwInterface::StatusType::Latency );
 		break;
 	case Camera::Exposure:
-		status.det = DetExposure;
-		status.acq = AcqRunning;
-//        std::cout << "DetExposure/AcqRunning" << std::endl;
+		status.set( HwInterface::StatusType::Exposure );
 		break;
 	case Camera::Readout:
-		status.det = DetReadout;
-		status.acq = AcqRunning;
-//        std::cout << "DetReadout/AcqRunning" << std::endl;
+		status.set( HwInterface::StatusType::Readout );
 		break;
 	case Camera::Paused:
-		status.det = DetLatency;
-		status.acq = AcqRunning;
-//        std::cout << "DetLAtency/AcqRunning" << std::endl;
+		status.set( HwInterface::StatusType::Latency );
 		break;
 	case Camera::Fault:
-		status.det = DetFault;
-		status.acq = AcqFault;
+		status.set( HwInterface::StatusType::Fault );
 		break;
 	}
-	status.det_mask = DetExposure | DetReadout | DetLatency;
 	DEB_TRACE() << DEB_VAR1(status);
 }
 

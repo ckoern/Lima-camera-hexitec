@@ -128,6 +128,8 @@ Camera::Camera(const std::string& ipAddress, const std::string& configFilename, 
 	m_private->m_quit = false;
 	m_framesPerTrigger = 0;
 
+	m_bufferCtrlObj = new SoftBufferCtrlObj();
+
 
 	setStatus(Camera::Initialising);
 	m_private->m_hexitec = std::unique_ptr < HexitecAPI::HexitecApi > (new HexitecAPI::HexitecApi(ipAddress, m_timeout));
@@ -167,10 +169,10 @@ void Camera::initialise() {
 	uint32_t errorCode;
 	std::string errorCodeString;
 	std::string errorDescription;
-
 	if (m_private->m_hexitec->readConfiguration(m_configFilename) != HexitecAPI::NO_ERROR) {
 		THROW_HW_ERROR(Error) << "Failed to read the configuration file " << DEB_VAR1(m_configFilename);
 	}
+
 	m_private->m_hexitec->initDevice(errorCode, errorCodeString, errorDescription);
 	if (errorCode != HexitecAPI::NO_ERROR) {
 		DEB_TRACE() << "Error      :" << errorCodeString;
@@ -178,6 +180,7 @@ void Camera::initialise() {
 		THROW_HW_ERROR(Error) << errorDescription << " " << DEB_VAR1(errorCode);
 	}
 	DEB_TRACE() << "Error code :" << errorCode;
+
 	uint8_t useTermChar = true;
 	rc = m_private->m_hexitec->openSerialPortBulk0((2 << 16), useTermChar, 0x0d);
 	if (rc != HexitecAPI::NO_ERROR) {
@@ -198,6 +201,7 @@ void Camera::initialise() {
 	uint8_t width;
 	uint8_t height;
 	uint32_t collectDcTime;
+
 	rc = m_private->m_hexitec->configureDetector(width, height, m_frameTime, collectDcTime);
 	if (rc != HexitecAPI::NO_ERROR) {
 		THROW_HW_ERROR(Error) << "Failed to configure the detector " << DEB_VAR1(rc);
@@ -586,7 +590,6 @@ void Camera::AcqThread::threadFunction() {
 	auto trigger_failed = false;
 	StdBufferCbMgr& buffer_mgr = m_cam.m_bufferCtrlObj->getBuffer();
 	buffer_mgr.setStartTimestamp(Timestamp::now());
-
 	while (true) {
 		while (!m_cam.m_private->m_acq_started && !m_cam.m_private->m_quit) {
 			DEB_TRACE() << "AcqThread Waiting ";
@@ -629,6 +632,9 @@ void Camera::AcqThread::threadFunction() {
 			if (rc == HexitecAPI::NO_ERROR) {
 				if (m_cam.getStatus() == Camera::Exposure) {
 					DEB_TRACE() << "Image# " << m_cam.m_private->m_image_number << " acquired";
+					HwFrameInfoType frame_info;
+					frame_info.acq_frame_nb = m_cam.m_private->m_image_number;
+					continue_acq = buffer_mgr.newFrameReady(frame_info);
 					m_cam.m_private->m_image_number++;
 				} else {
 					std::this_thread::sleep_for(std::chrono::milliseconds(500));
