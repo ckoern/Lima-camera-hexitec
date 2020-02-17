@@ -37,8 +37,7 @@
 #include "processlib/TaskMgr.h"
 #include "processlib/TaskEventCallback.h"
 #include "HexitecCamera.h"
-#include "HexitecSavingTask.h"
-#include "HexitecProcessingTask.h"
+
 
 using namespace lima;
 using namespace lima::Hexitec;
@@ -70,10 +69,6 @@ protected:
 
 private:
 	TaskEventCb* m_eventCb;
-	HexitecSavingTask* m_savingTask0;
-	HexitecSavingTask* m_savingTask1;
-	HexitecSavingTask* m_savingTask2;
-    HexitecSavingTask* m_savingTask3;
 	Data m_lastFrame;
 	Camera& m_cam;
 };
@@ -126,19 +121,13 @@ Camera::Camera(const std::string& ipAddress, const std::string& configFilename, 
 
 	DEB_CONSTRUCTOR();
 
-//	DebParams::setModuleFlags(DebParams::AllFlags);
-//	DebParams::setTypeFlags(DebParams::AllFlags);
-//	DebParams::setFormatFlags(DebParams::AllFlags);
+
 
 	m_private = std::shared_ptr<Private>(new Private);
 	m_private->m_acq_started = false;
 	m_private->m_quit = false;
 	m_framesPerTrigger = 0;
 
-	int nbSavingProcesses = 4;
-	if (m_saveOpt!= SaveNothing)
-	    m_savingCtrlObj = new SavingCtrlObj(*this, nbSavingProcesses);
-	m_bufferCtrlObj = new SoftBufferCtrlObj();
 
 	setStatus(Camera::Initialising);
 	m_private->m_hexitec = std::unique_ptr < HexitecAPI::HexitecApi > (new HexitecAPI::HexitecApi(ipAddress, m_timeout));
@@ -167,7 +156,6 @@ Camera::~Camera() {
 	m_private->m_hexitec->closeStream();
 	PoolThreadMgr::get().quit();
 	delete m_bufferCtrlObj;
-	delete m_savingCtrlObj;
 }
 
 //----------------------------------------------------------------------------
@@ -570,9 +558,7 @@ HwBufferCtrlObj* Camera::getBufferCtrlObj() {
 	return m_bufferCtrlObj;
 }
 
-SavingCtrlObj* Camera::getSavingCtrlObj() {
-	return m_savingCtrlObj;
-}
+
 
 //-----------------------------------------------------
 // acquisition thread
@@ -600,11 +586,6 @@ void Camera::AcqThread::threadFunction() {
 	auto trigger_failed = false;
 	StdBufferCbMgr& buffer_mgr = m_cam.m_bufferCtrlObj->getBuffer();
 	buffer_mgr.setStartTimestamp(Timestamp::now());
-	PoolThreadMgr::get().setNumberOfThread(12);
-    m_savingTask0 = new HexitecSavingTask(*m_cam.getSavingCtrlObj(), 0);
-    m_savingTask1 = new HexitecSavingTask(*m_cam.getSavingCtrlObj(), 1);
-    m_savingTask2 = new HexitecSavingTask(*m_cam.getSavingCtrlObj(), 2);
-    m_savingTask3 = new HexitecSavingTask(*m_cam.getSavingCtrlObj(), 3);
 
 	while (true) {
 		while (!m_cam.m_private->m_acq_started && !m_cam.m_private->m_quit) {
@@ -640,83 +621,13 @@ void Camera::AcqThread::threadFunction() {
 		m_cam.m_bufferCtrlObj->getNbBuffers(nbf);
 		DEB_TRACE() << DEB_VAR1(nbf);
 
-        int saveOpt;
-        m_cam.getSaveOpt(saveOpt);
-		Size size;
-		m_cam.getDetectorImageSize(size);
-		int height = size.getHeight();
-		int width = size.getWidth();
-		std::vector<int> dimensions;
-		dimensions.push_back(width);
-		dimensions.push_back(height);
 
-		m_lastFrame.dimensions = dimensions;
-		m_lastFrame.type = Data::UINT16;
-		Buffer *newFrameBuffer = new Buffer(width*height*sizeof(uint16_t));
-		m_lastFrame.setBuffer(newFrameBuffer);
-		newFrameBuffer->unref();
-		memset(m_lastFrame.data(), 0, width*height*sizeof(uint16_t));
-
-		HexitecProcessingTask* processingTask;
-		if (saveOpt & Camera::SaveProcessed || saveOpt & Camera::SaveHistogram || saveOpt & Camera::SaveSummed){
-			processingTask = new HexitecProcessingTask(m_savingTask1,
-				m_cam.m_processType, m_cam.m_asicPitch, m_cam.m_binWidth, m_cam.m_speclen,
-				m_cam.m_lowThreshold, m_cam.m_highThreshold, saveOpt);
-		}
 	    while (continue_acq && m_cam.m_private->m_acq_started && (!m_cam.m_nb_frames || m_cam.m_private->m_image_number < m_cam.m_nb_frames)) {
 
 			bptr = (uint16_t*) buffer_mgr.getFrameBufferPtr(m_cam.m_private->m_image_number);
-//			std::cout << "Retrieving image# " << m_cam.m_private->m_image_number << " in bptr " << (void*) bptr << std::endl;
 			rc = m_cam.m_private->m_hexitec->retrieveBuffer((uint8_t*)bptr, m_cam.m_timeout);
 			if (rc == HexitecAPI::NO_ERROR) {
 				if (m_cam.getStatus() == Camera::Exposure) {
-					Data srcData;
-					srcData.type = Data::UINT16;
-					srcData.dimensions = dimensions;
-					srcData.frameNumber = m_cam.m_private->m_image_number;
-
-					Buffer *fbuf = new Buffer(width*height*sizeof(uint16_t));
-					srcData.setBuffer(fbuf);
-					fbuf->unref();
-					memcpy(srcData.data(), bptr, width*height*sizeof(uint16_t));
-
-					if (saveOpt & Camera::SaveRaw) {
-						DEB_TRACE() << "Save raw frame " << m_cam.m_private->m_image_number;
-						TaskMgr *taskMgr = new TaskMgr();
-						taskMgr->setLinkTask(0, m_savingTask0);
-						taskMgr->setInputData(srcData);
-						DEB_TRACE() << "Adding frame " << m_cam.m_private->m_image_number << " to task to pool (saving) ";
-						PoolThreadMgr::get().addProcess(taskMgr);
-					}
-					if (saveOpt & Camera::SaveProcessed || saveOpt & Camera::SaveHistogram || saveOpt & Camera::SaveSummed) {
-						// As only a single Data structure can be passed to the processing task we therefore
-						// create a Data structure with the current frame and last frame appended so that
-						// next frame correction can be achieved.
-						Data concatData;
-						std::vector<int> concatDimensions;
-						uint16_t* bptr16;
-						concatData.frameNumber = m_cam.m_private->m_image_number;
-						concatDimensions.push_back(width);
-						concatDimensions.push_back(height);
-						concatDimensions.push_back(2);
-						concatData.type = Data::UINT16;
-						concatData.dimensions = concatDimensions;
-						Buffer *newConcatBuffer = new Buffer(width*height*sizeof(uint16_t)*2);
-						concatData.setBuffer(newConcatBuffer);
-						newConcatBuffer->unref();
-						bptr16 = (uint16_t*)concatData.data();
-						memcpy(bptr16, bptr, width*height*sizeof(uint16_t));
-						bptr16 += width*height;
-						memcpy(bptr16, m_lastFrame.data(),width*height*sizeof(uint16_t));
-
-						DEB_TRACE() << "Process raw frame " << m_cam.m_private->m_image_number << " and last frame " << m_lastFrame.frameNumber;
-						TaskMgr *taskMgr = new TaskMgr();
-						memcpy(m_lastFrame.data(), bptr,width*height*sizeof(uint16_t));
-						taskMgr->setLinkTask(1, processingTask);
-						taskMgr->setInputData(concatData);
-						DEB_TRACE() << "Adding frame " << m_cam.m_private->m_image_number << " to task to pool (proc) ";
-						PoolThreadMgr::get().addProcess(taskMgr);
-					}
 					DEB_TRACE() << "Image# " << m_cam.m_private->m_image_number << " acquired";
 					m_cam.m_private->m_image_number++;
 				} else {
@@ -753,49 +664,9 @@ void Camera::AcqThread::threadFunction() {
             DEB_TRACE() << "Setting bias off";
             m_cam.setHvBiasOff();
             DEB_ALWAYS() << "Check for outstanding processes";
-            if (saveOpt & Camera::SaveProcessed || saveOpt & Camera::SaveHistogram || saveOpt & Camera::SaveSummed) {
-                while (processingTask->getNbProcessedFrames() < m_cam.m_private->m_image_number) {
-                    DEB_TRACE() << "still processing " << processingTask->getNbProcessedFrames();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                }
-            }
-            if (saveOpt & Camera::SaveHistogram) {
-                DEB_ALWAYS() << "Saving histogram ";
-                TaskMgr *taskMgr = new TaskMgr();
-                taskMgr->setLinkTask(0, m_savingTask2);
-                m_savingTask2->setEventCallback(m_eventCb);
-                Data histData = processingTask->getGlobalHistogram();
-                taskMgr->setInputData(histData);
-                PoolThreadMgr::get().addProcess(taskMgr);
-                while (!m_cam.m_private->m_finished_saving) {
-                    DEB_ALWAYS() << "still saving";
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                }
-            }
-            if (saveOpt & Camera::SaveSummed) {
-                m_cam.m_private->m_finished_saving = false;
-                DEB_ALWAYS() << "Saving summed histogram ";
-                TaskMgr *taskMgr = new TaskMgr();
-                taskMgr->setLinkTask(0, m_savingTask3);
-                m_savingTask3->setEventCallback(m_eventCb);
-                Data sumData = processingTask->getGlobalHistogramSum();
-                taskMgr->setInputData(sumData);
-                PoolThreadMgr::get().addProcess(taskMgr);
-                while (!m_cam.m_private->m_finished_saving) {
-                    DEB_ALWAYS() << "still saving " << m_cam.m_private->m_finished_saving;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                }
-            }
+            
 		}
-        DEB_ALWAYS() << "Closing streams 0 ";
-        m_cam.m_savingCtrlObj->close(0);
-        DEB_ALWAYS() << "Closing streams 1 ";
-        m_cam.m_savingCtrlObj->close(1);
-        DEB_ALWAYS() << "Closing streams 2 ";
-        m_cam.m_savingCtrlObj->close(2);
-        DEB_ALWAYS() << "Closing streams 3 ";
-        m_cam.m_savingCtrlObj->close(3);
-        delete processingTask;
+
 		DEB_ALWAYS() << "Set status to ready";
 		DEB_ALWAYS() << "Skipped frames " << m_cam.m_errCount;
 		if (rc == HexitecAPI::NO_ERROR && rc2 == HexitecAPI::NO_ERROR) {

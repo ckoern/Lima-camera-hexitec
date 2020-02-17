@@ -24,7 +24,7 @@
 #include "HexitecCamera.h"
 #include "HexitecDetInfoCtrlObj.h"
 #include "HexitecSyncCtrlObj.h"
-#include "HexitecSavingCtrlObj.h"
+
 
 using namespace lima;
 using namespace lima::Hexitec;
@@ -45,9 +45,7 @@ Interface::Interface(Camera& cam) : m_cam(cam) {
 	HwBufferCtrlObj *buffer = m_cam.getBufferCtrlObj();
 	m_cap_list.push_back(HwCap(buffer));
 
-	m_saving = m_cam.getSavingCtrlObj();
-	HwSavingCtrlObj *saving = m_saving;
-	m_cap_list.push_back(saving);
+
 }
 
 //-----------------------------------------------------

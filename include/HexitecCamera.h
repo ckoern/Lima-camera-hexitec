@@ -26,8 +26,7 @@
 #include <memory>
 #include "lima/HwBufferMgr.h"
 #include "lima/HwMaxImageSizeCallback.h"
-#include <HexitecSavingCtrlObj.h>
-#include <HexitecSavingTask.h>
+
 
 namespace HexitecAPI
 {
@@ -94,7 +93,7 @@ public:
 	// buffer control object
 	HwBufferCtrlObj* getBufferCtrlObj();
 	// Saving control object
-	SavingCtrlObj* getSavingCtrlObj();
+
 
 	// detector info object
 	void getPixelSize(double& sizex, double& sizey);
@@ -174,7 +173,7 @@ private:
 	// Buffer control object
 	SoftBufferCtrlObj* m_bufferCtrlObj;
 	// Saving control object
-	SavingCtrlObj* m_savingCtrlObj;
+
 
 
 	Cond m_cond;
