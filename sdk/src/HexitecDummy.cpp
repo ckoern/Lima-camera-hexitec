@@ -39,7 +39,6 @@ int32_t HexitecApi::getFramesAcquired() {
 }
 
 int32_t HexitecApi::startAcq() {
-	m_file.open(m_deviceDescriptor, std::fstream::in|std::ifstream::binary);
 	return NO_ERROR;
 }
 
@@ -95,6 +94,8 @@ int32_t HexitecApi::closeSerialPort() {
 }
 
 int32_t HexitecApi::closeStream() {
+	m_file.close();
+
 	return NO_ERROR;
 }
 
@@ -179,6 +180,8 @@ int32_t HexitecApi::initFwDefaults(uint8_t setHv, double& hvSetPoint, uint8_t& w
 }
 
 int32_t HexitecApi::openStream() {
+	m_file.open(m_deviceDescriptor, std::fstream::in|std::ifstream::binary);
+
 	return NO_ERROR;
 }
 
