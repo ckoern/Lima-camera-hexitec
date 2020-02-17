@@ -624,7 +624,7 @@ void Camera::AcqThread::threadFunction() {
 		m_cam.m_bufferCtrlObj->getNbBuffers(nbf);
 		DEB_TRACE() << DEB_VAR1(nbf);
 
-		DEB_ALWAYS() <<  "Target Number of Frames: " << m_cam.m_nb_frames;
+
 	    while (continue_acq && m_cam.m_private->m_acq_started && (!m_cam.m_nb_frames || m_cam.m_private->m_image_number < m_cam.m_nb_frames)) {
 
 			bptr = (uint16_t*) buffer_mgr.getFrameBufferPtr(m_cam.m_private->m_image_number);
@@ -697,9 +697,8 @@ Camera::TimerThread::~TimerThread() {
 	m_cam.m_private->m_quit = true;
 	m_cam.m_cond.broadcast();
 	lock.unlock();
-	DEB_ALWAYS()  << "Waiting for the timer thread to be done (joining the main thread)";
+	DEB_TRACE()  << "Waiting for the timer thread to be done (joining the main thread)";
 	join();
-	DEB_ALWAYS()  << "timer thread joined.";
 }
 
 void Camera::TimerThread::threadFunction() {
@@ -715,25 +714,21 @@ void Camera::TimerThread::threadFunction() {
 		if (m_cam.m_private->m_quit)
 			return;
 
-		//std::this_thread::sleep_for(std::chrono::milliseconds(m_cam.m_biasVoltageRefreshInterval));
-		if( m_cam.m_cond.wait(m_cam.m_biasVoltageRefreshInterval/1000) ){
-			break;
-		}else{
-			if (m_cam.m_private->m_acq_started) {
-				m_cam.setStatus(Camera::Paused);
-				DEB_TRACE() << "Paused at frame " << DEB_VAR1(m_cam.m_private->m_image_number);
-				m_cam.setHvBiasOff();
-			if (m_cam.m_private->m_acq_started)
-				std::this_thread::sleep_for(std::chrono::milliseconds(m_cam.m_biasVoltageRefreshTime));
-			if (m_cam.m_private->m_acq_started)
-				m_cam.setHvBiasOn();
-				std::this_thread::sleep_for(std::chrono::milliseconds(m_cam.m_biasVoltageSettleTime));
-			if (m_cam.m_private->m_acq_started)
-				m_cam.setStatus(Camera::Exposure);
-				DEB_TRACE() << "Acq status in timer after restart " << DEB_VAR1(m_cam.m_private->m_status);
-			} else {
-				m_cam.setHvBiasOff();
-			}
+		std::this_thread::sleep_for(std::chrono::milliseconds(m_cam.m_biasVoltageRefreshInterval));
+		if (m_cam.m_private->m_acq_started) {
+			m_cam.setStatus(Camera::Paused);
+			DEB_TRACE() << "Paused at frame " << DEB_VAR1(m_cam.m_private->m_image_number);
+			m_cam.setHvBiasOff();
+		if (m_cam.m_private->m_acq_started)
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_cam.m_biasVoltageRefreshTime));
+        if (m_cam.m_private->m_acq_started)
+			m_cam.setHvBiasOn();
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_cam.m_biasVoltageSettleTime));
+	    if (m_cam.m_private->m_acq_started)
+			m_cam.setStatus(Camera::Exposure);
+			DEB_TRACE() << "Acq status in timer after restart " << DEB_VAR1(m_cam.m_private->m_status);
+		} else {
+            m_cam.setHvBiasOff();
 		}
 	}
 }
