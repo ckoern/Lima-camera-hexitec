@@ -42,7 +42,6 @@
 # =============================================================================
 #
 import PyTango
-import AttrHelper
 from Lima import Core
 from Lima.Server import AttrHelper
 from Lima import Hexitec as HexitecAcq
@@ -53,7 +52,7 @@ class Hexitec(PyTango.Device_4Impl):
     Core.DEB_CLASS(Core.DebModApplication, 'LimaCCDs')
 
     def __init__(self, cl, name):
-        PyTango.Device_4Impl.__init__(self, cl, name)
+        PyTango.Device_4Impl.__init__(self, *args)
 
         self.__ProcessType = {'RAW': HexitecAcq.Camera.RAW,
                               'SORT': HexitecAcq.Camera.SORT,
@@ -140,12 +139,12 @@ class Hexitec(PyTango.Device_4Impl):
     @Core.DEB_MEMBER_FUNCT
     def read_type(self, attr):
         type = _HexitecCamera.getType()
-        attr.set_value(AttrHelper._getDictKey(self.__ProcessType, type))
+        attr.set_value(AttrHelper.getDictKey(self.__ProcessType, type))
 
     @Core.DEB_MEMBER_FUNCT
     def write_type(self, attr):
         data = attr.get_write_value()
-        type = AttrHelper._getDictValue(self.__ProcessType, data)
+        type = AttrHelper.getDictValue(self.__ProcessType, data)
         _HexitecCamera.setType(type)
 
     @Core.DEB_MEMBER_FUNCT
