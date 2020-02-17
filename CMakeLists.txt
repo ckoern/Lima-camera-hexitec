@@ -55,12 +55,50 @@ endif()
 
 
 #LIBRARY
-set(PLEORA_ROOT "/opt/pleora/ebus_sdk/CentOS-RHEL-7-x86_64/")
-find_library(LIB_PLEORA NAMES PvDevice PvStream PvBuffer PvGenICam PvBase PvSerial EbUtilsLib
+#set(PLEORA_ROOT "/opt/pleora/ebus_sdk/CentOS-RHEL-7-x86_64/")
+# find_library(LIB_PLEORA NAMES PvDevice PvStream PvBuffer PvGenICam PvBase PvSerial EbUtilsLib
+#   PATHS "${PLEORA_ROOT}/lib"
+#   NO_CMAKE_FIND_ROOT_PATH
+#   NO_DEFAULT_PATH
+#   )
+
+
+  find_library(lib_pleora_device NAMES PvDevice 
   PATHS "${PLEORA_ROOT}/lib"
   NO_CMAKE_FIND_ROOT_PATH
   NO_DEFAULT_PATH
-  )
+)
+find_library(lib_pleora_stream NAMES  PvStream 
+  PATHS "${PLEORA_ROOT}/lib"
+  NO_CMAKE_FIND_ROOT_PATH
+  NO_DEFAULT_PATH
+)
+find_library(lib_pleora_buffer NAMES PvBuffer
+  PATHS "${PLEORA_ROOT}/lib"
+  NO_CMAKE_FIND_ROOT_PATH
+  NO_DEFAULT_PATH
+)
+find_library(lib_pleora_genicam NAMES PvGenICam 
+  PATHS "${PLEORA_ROOT}/lib"
+  NO_CMAKE_FIND_ROOT_PATH
+  NO_DEFAULT_PATH
+)
+find_library(lib_pleora_base NAMES  PvBase 
+  PATHS "${PLEORA_ROOT}/lib"
+  NO_CMAKE_FIND_ROOT_PATH
+  NO_DEFAULT_PATH
+)
+find_library(lib_pleora_serial NAMES PvSerial 
+  PATHS "${PLEORA_ROOT}/lib"
+  NO_CMAKE_FIND_ROOT_PATH
+  NO_DEFAULT_PATH
+)
+find_library(lib_pleora_utils NAMES  EbUtilsLib
+  PATHS "${PLEORA_ROOT}/lib"
+  NO_CMAKE_FIND_ROOT_PATH
+  NO_DEFAULT_PATH
+)
+set( LIB_PLEORA ${lib_pleora_device} ${lib_pleora_stream} ${lib_pleora_buffer} ${lib_pleora_genicam} ${lib_pleora_base} ${lib_pleora_serial} ${lib_pleora_utils}  )
 if (("${LIB_PLEORA}" STREQUAL "LIB_PLEORA-NOTFOUND"))
   message(FATAL_ERROR "Pleora libs not found")
 endif()
@@ -93,15 +131,15 @@ add_library(hexitec SHARED
   src/HexitecInterface.cpp
   src/HexitecDetInfoCtrlObj.cpp
   src/HexitecSyncCtrlObj.cpp
-  src/HexitecProcessingTask.cpp
-  src/HexitecSavingTask.cpp
-  src/HexitecSavingCtrlObj.cpp
   sdk/src/HexitecApi.cpp
   sdk/src/GigE.cpp
   sdk/tools/src/INIReader.cpp
   sdk/tools/src/INIReader.h
+  sdk/tools/ini.c
   ${HEXITEC_INCS}
 )
+
+
 
 # Generate export macros
 generate_export_header(hexitec)
