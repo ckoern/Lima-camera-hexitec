@@ -25,7 +25,10 @@ int pack(std::string str, int idx) {
 	for (auto j=0; j<8; j++, idx++) {
 		val += str.at(idx) - 48 << j;
 	}
+	return val;
 }
+
+
 
 int32_t HexitecApi::readConfiguration(std::string fname) {
 	std::string line;
@@ -112,7 +115,7 @@ int32_t HexitecApi::readConfiguration(std::string fname) {
 	m_operationMode.EdDisableCountingMode = CONTROL_DISABLED;
 	m_operationMode.EdTestMode = CONTROL_DISABLED;
 	m_operationMode.EdCycles.size2 = 1;
-	m_operationMode.enSyncMode = CONTROL_ENABLED;
+	m_operationMode.enSyncMode = CONTROL_DISABLED;
 //	section = "HexitecOperationMode";
 //	m_operationMode.DcUploadDarkCorrectionValues = static_cast<Control>(reader.GetInteger(section, "DcUploadDarkCorrectionValues", 0));
 //	m_operationMode.DcCollectDarkCorrectionValues = static_cast<Control>(reader.GetInteger(section, "DcCollectDarkCorrectionValues", 0));
@@ -746,7 +749,7 @@ int32_t HexitecApi::initDevice(uint32_t& internalErrorCode, std::string& errorCo
 	return pvResult.IsOK();
 }
 
-int32_t HexitecApi::initFwDefaults(uint8_t setHv, double& hvSetPoint, uint8_t width, uint8_t height,
+int32_t HexitecApi::initFwDefaults(uint8_t setHv, double& hvSetPoint, uint8_t& width, uint8_t& height,
 		HexitecSensorConfig& sensorConfig, HexitecOperationMode& operationMode, double& frameTime, uint32_t& collectDcTime) {
 	uint8_t txBuffer[8];
 	uint8_t rxBuffer[7];

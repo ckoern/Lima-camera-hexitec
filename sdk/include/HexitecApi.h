@@ -196,7 +196,7 @@ public:
 	int32_t getSensorConfig(HexitecSensorConfig& sensorConfig);
 	int32_t getTriggerState(uint8_t& trigger1, uint8_t& trigger2, uint8_t& trigger3);
 	int32_t initDevice(uint32_t& internalErrorCode, std::string& errorCodeString, std::string& errorDescription);
-	int32_t initFwDefaults(uint8_t setHv, double& hvSetPoint, uint8_t width, uint8_t height,
+	int32_t initFwDefaults(uint8_t setHv, double& hvSetPoint, uint8_t& width, uint8_t& height,
 			HexitecSensorConfig& sensorConfig, HexitecOperationMode& operationMode, double& frameTime, uint32_t& collectDcTime);
 	int32_t openStream();
 	int32_t readEnvironmentValues(double& humidity,double& ambientTemperature,double& asicTemperature,
