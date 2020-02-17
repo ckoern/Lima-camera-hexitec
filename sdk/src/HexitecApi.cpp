@@ -1,4 +1,7 @@
 #include <HexitecApi.h>
+
+#ifndef COMPILE_HEXITEC_DUMMY
+
 #include "INIReader.h"
 #include <iomanip>
 #include <sstream>
@@ -1376,3 +1379,4 @@ void HexitecApi::HexitecFinishCb::finished() {
 	m_api.disableTriggerGate();
 }
 
+#endif //#ifndef COMPILE_HEXITEC_DUMMY

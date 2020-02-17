@@ -61,48 +61,49 @@ endif()
 #   NO_CMAKE_FIND_ROOT_PATH
 #   NO_DEFAULT_PATH
 #   )
-
-
+if( HEXITEC_AS_DUMMY )
+  add_definitions(-DCOMPILE_HEXITEC_DUMMY)
+else()
   find_library(lib_pleora_device NAMES PvDevice 
-  PATHS "${PLEORA_ROOT}/lib"
-  NO_CMAKE_FIND_ROOT_PATH
-  NO_DEFAULT_PATH
-)
-find_library(lib_pleora_stream NAMES  PvStream 
-  PATHS "${PLEORA_ROOT}/lib"
-  NO_CMAKE_FIND_ROOT_PATH
-  NO_DEFAULT_PATH
-)
-find_library(lib_pleora_buffer NAMES PvBuffer
-  PATHS "${PLEORA_ROOT}/lib"
-  NO_CMAKE_FIND_ROOT_PATH
-  NO_DEFAULT_PATH
-)
-find_library(lib_pleora_genicam NAMES PvGenICam 
-  PATHS "${PLEORA_ROOT}/lib"
-  NO_CMAKE_FIND_ROOT_PATH
-  NO_DEFAULT_PATH
-)
-find_library(lib_pleora_base NAMES  PvBase 
-  PATHS "${PLEORA_ROOT}/lib"
-  NO_CMAKE_FIND_ROOT_PATH
-  NO_DEFAULT_PATH
-)
-find_library(lib_pleora_serial NAMES PvSerial 
-  PATHS "${PLEORA_ROOT}/lib"
-  NO_CMAKE_FIND_ROOT_PATH
-  NO_DEFAULT_PATH
-)
-find_library(lib_pleora_utils NAMES  EbUtilsLib
-  PATHS "${PLEORA_ROOT}/lib"
-  NO_CMAKE_FIND_ROOT_PATH
-  NO_DEFAULT_PATH
-)
-set( LIB_PLEORA ${lib_pleora_device} ${lib_pleora_stream} ${lib_pleora_buffer} ${lib_pleora_genicam} ${lib_pleora_base} ${lib_pleora_serial} ${lib_pleora_utils}  )
-if (("${LIB_PLEORA}" STREQUAL "LIB_PLEORA-NOTFOUND"))
-  message(FATAL_ERROR "Pleora libs not found")
+    PATHS "${PLEORA_ROOT}/lib"
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+  )
+  find_library(lib_pleora_stream NAMES  PvStream 
+    PATHS "${PLEORA_ROOT}/lib"
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+  )
+  find_library(lib_pleora_buffer NAMES PvBuffer
+    PATHS "${PLEORA_ROOT}/lib"
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+  )
+  find_library(lib_pleora_genicam NAMES PvGenICam 
+    PATHS "${PLEORA_ROOT}/lib"
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+  )
+  find_library(lib_pleora_base NAMES  PvBase 
+    PATHS "${PLEORA_ROOT}/lib"
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+  )
+  find_library(lib_pleora_serial NAMES PvSerial 
+    PATHS "${PLEORA_ROOT}/lib"
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+  )
+  find_library(lib_pleora_utils NAMES  EbUtilsLib
+    PATHS "${PLEORA_ROOT}/lib"
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+  )
+  set( LIB_PLEORA ${lib_pleora_device} ${lib_pleora_stream} ${lib_pleora_buffer} ${lib_pleora_genicam} ${lib_pleora_base} ${lib_pleora_serial} ${lib_pleora_utils}  )
+  if (("${LIB_PLEORA}" STREQUAL "LIB_PLEORA-NOTFOUND"))
+    message(FATAL_ERROR "Pleora libs not found")
+  endif()
 endif()
-
 # CMake additional macros
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${LIMA_CMAKE_INCLUDE_DIRS} ${CMAKE_MODULE_PATH})
 
@@ -132,6 +133,7 @@ add_library(hexitec SHARED
   src/HexitecDetInfoCtrlObj.cpp
   src/HexitecSyncCtrlObj.cpp
   sdk/src/HexitecApi.cpp
+  sdk/src/HexitecDummy.cpp
   sdk/src/GigE.cpp
   sdk/tools/src/INIReader.cpp
   sdk/tools/src/INIReader.h

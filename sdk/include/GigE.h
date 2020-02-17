@@ -7,6 +7,9 @@
 #ifndef GIGE_H
 #define GIGE_H
 
+#ifndef COMPILE_HEXITEC_DUMMY
+
+
 #ifdef __linux__
 #define GIGE_API
 #define GIGE_CDECL
@@ -237,4 +240,5 @@ private:
 };
 
 } // namespace GigE
+#endif // not COMPILE_HEXITEC_DUMMY
 #endif // GIGE_H

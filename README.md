@@ -1,7 +1,7 @@
 [![License](https://img.shields.io/github/license/esrf-bliss/lima.svg?style=flat)](https://opensource.org/licenses/GPL-3.0)
 [![Gitter](https://img.shields.io/gitter/room/esrf-bliss/lima.svg?style=flat)](https://gitter.im/esrf-bliss/LImA)
 
-# LImA Andor SDK3 Camera Plugin
+# LImA Hexitec Camera Plugin
 
 A fully spectroscopic hard X-ray imaging detector
 The HEXITEC detector measures the energy and position of every photon in the 4-200keV range. Each one of the 80x80 pixels provides a full energy spectrum with an average energy resolution of 800eV FWHM at 60keV.
@@ -9,7 +9,7 @@ The GigE 8080 is a self-contained, CE marked module that only requires a mains p
 
 # Install
 
-There is no conda packages for this detector family. One should compile from the main project source code. Refer to the Lima documentation below.
+There is no conda packages for this detector family. One should compile from the main project source code. Refer to the Lima documentation below. The pleora eBUS SDK is needed for communication with the detector. It's install directory has to be given during the CMake configuration using `-DPLEORA_ROOT=<path_to_sdk_root>`. If pleora or the detector is not available `-DHEXITEC_AS_DUMMY=true` can be passed to for testing. In this case, a dummy interface will be used which returns the frames from a file (filepath is given instead of the IP of the detector).
 
 Lima ( **L** ibrary for **Im** age **A** cquisition) is a project for the unified control of 2D detectors. The aim is to clearly separate hardware specific code from common software configuration and features, like setting standard acquisition parameters (exposure time, external trigger), file saving and image processing.
 

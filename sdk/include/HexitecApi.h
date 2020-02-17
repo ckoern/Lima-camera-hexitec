@@ -21,6 +21,7 @@
 #include <functional>
 #include <mutex>
 
+
 #ifndef COMPILE_HEXITEC_DUMMY
 #include <GigE.h>
 #endif

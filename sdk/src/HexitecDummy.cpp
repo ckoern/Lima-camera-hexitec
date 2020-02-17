@@ -1,4 +1,7 @@
 #include <HexitecApi.h>
+
+
+#ifdef COMPILE_HEXITEC_DUMMY
 #include <iomanip>
 #include <sstream>
 #include <iostream>
@@ -8,11 +11,12 @@
 #include <thread>
 #include <fstream>
 
+
+
 using namespace HexitecAPI;
 
 HexitecApi::HexitecApi(const std::string deviceDescriptor, uint32_t timeout) : m_deviceDescriptor(deviceDescriptor), m_timeout(timeout),
 	m_sensorConfig(), m_operationMode(), m_systemConfig(), m_biasConfig() {
-	mutexLock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 }
 
 HexitecApi::~HexitecApi() {
@@ -114,11 +118,41 @@ int32_t HexitecApi::createPipeline(uint32_t bufferCount, uint32_t transferBuffer
 	return NO_ERROR;
 }
 
+int32_t HexitecApi::createPipelineOld(uint32_t bufferCount) {
+	return NO_ERROR;
+}
+int32_t HexitecApi::exitDevice() {
+	return NO_ERROR;
+}
+
+int32_t HexitecApi::getBufferHandlingThreadPriority(int32_t& priority )
+{
+	return NO_ERROR;
+}
+int32_t HexitecApi::getDeviceInformation(HexitecDeviceInfo& deviceInfo) {
+	deviceInfo.Vendor = "Hexitec";
+	deviceInfo.Model = "Hexitec";
+	deviceInfo.ManufacturerInfo = "";
+	deviceInfo.SerialNumber = "0";
+	deviceInfo.UserId = "";
+	deviceInfo.MacAddress = "";
+	deviceInfo.IpAddress = "";
+	deviceInfo.NetMask = "";
+	deviceInfo.GateWay ="";
+	return NO_ERROR;
+}
+
 double HexitecApi::getFrameTime(uint8_t width, uint8_t height) {
 	return 3.142;
 }
-
+int32_t getIntegerValue(const std::string propertyName, int64_t &value){
+	return 0;
+}
 int32_t HexitecApi::getLastResult(uint32_t& internalErrorCode, std::string errorCodeString, std::string errorDescription) {
+	return NO_ERROR;
+}
+
+int32_t HexitecApi::getOperationMode(HexitecOperationMode& operationMode){
 	return NO_ERROR;
 }
 
@@ -139,7 +173,7 @@ int32_t HexitecApi::initDevice(uint32_t& internalErrorCode, std::string& errorCo
 	return NO_ERROR;
 }
 
-int32_t HexitecApi::initFwDefaults(uint8_t setHv, double& hvSetPoint, uint8_t width, uint8_t height,
+int32_t HexitecApi::initFwDefaults(uint8_t setHv, double& hvSetPoint, uint8_t& width, uint8_t& height,
 		HexitecSensorConfig& sensorConfig, HexitecOperationMode& operationMode, double& frameTime, uint32_t& collectDcTime) {
 	return NO_ERROR;
 }
@@ -200,6 +234,9 @@ int32_t HexitecApi::setTriggeredFrameCount(uint32_t frameCount) {
 	return NO_ERROR;
 }
 
+int32_t HexitecApi::stopAcquisition(){
+	return NO_ERROR;
+}
 
 int32_t HexitecApi::uploadOffsetValues(Reg2Byte* offsetValues, uint32_t offsetValuesLength) {
 	return NO_ERROR;
@@ -209,3 +246,14 @@ int32_t HexitecApi::setSensorConfig(HexitecSensorConfig sensorConfig) {
 	return NO_ERROR;
 }
 
+void     HexitecApi::setBiasVoltage(int volts){}
+void     HexitecApi::getBiasVoltage(int& volts){}
+void     HexitecApi::setRefreshVoltage(int volts){}
+void     HexitecApi::getRefreshVoltage(int& volts){}
+int32_t  HexitecApi::disableTriggerGate(){return NO_ERROR;}
+int32_t  HexitecApi::disableTriggerMode(){return NO_ERROR;}
+int32_t  HexitecApi::enableTriggerGate(){return NO_ERROR;}
+int32_t  HexitecApi::enableTriggerMode(){return NO_ERROR;}
+int32_t  HexitecApi::setTriggerCountingMode(bool enable){return NO_ERROR;}
+
+#endif // COMPILE_HEXITEC_DUMMY

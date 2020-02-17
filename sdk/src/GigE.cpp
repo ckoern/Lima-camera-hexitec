@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #endif
 #include "GigE.h"
+#ifndef COMPILE_HEXITEC_DUMMY
 #include <cmath>
 #include <iostream>
 
@@ -1190,3 +1191,6 @@ i32	GigEDevice::WriteSerialPort( const p_u8 TxBuffer, u32 TxBufferSize, u32 *Byt
 
 	return AS_NO_ERROR;
 }
+
+
+#endif
